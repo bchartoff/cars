@@ -1,0 +1,145 @@
+<head>
+<style>
+body, svg text{
+	font-family: Lato;
+}
+.tick text{
+	font-size: 13px;
+}
+.y.axis line, .y.axis path{
+	display: none;
+}
+.x.axis path{
+	display: none;
+}
+.x.axis line{
+	stroke: #dedddd;
+}
+.container{
+	width: 300px;
+	height: 200px;
+	display: inline-block;
+	margin-right: 20px;
+	margin-bottom: 70px;
+}
+.chartTitle{
+	font-size: 14px;
+	font-weight: bold;
+	display: block;
+}
+.chartSubtitle{
+	font-size: 12px;
+	font-style: italic;
+	display: block;
+}
+</style>
+</head>
+<body>
+<div id = "charts"></div>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+var colors=["#CFE8F3","#A2D4EC","#73BFE2","#46ABDB","#1696D2","#12719E","#0A4C6A","#062635"];
+
+
+d3.csv("cars.csv")
+    .row(function(d) { return {name: d.Make + " " + d.Model, subtitle: d.Spec, overall: 15 - +d.overall_rank, price:15 -  +d.price_rank, highway:15 -  +d.highway_rank, city: 15 - +d.city_rank, safety:15 -  +d.safety_rank, storage: 15 - +d.storage_rank, full_storage: 15 - +d.full_storage_rank}; })
+    .get(function(error, data) {
+	var chart = d3.select("#charts")
+		.selectAll(".container")
+		.data(data)
+		.enter()
+		.append("div")
+		.attr("class", "container")
+	chart.append("div")
+		.attr("class", "chartTitle")
+		.text(function(d){
+			return d.name
+		})
+	chart.append("div")
+		.attr("class", "chartSubtitle")
+		.text(function(d){
+			return d.subtitle
+		})
+
+
+
+	// set the dimensions and margins of the graph
+	var margin = {top: 20, right: 20, bottom: 30, left: 80},
+	    width = 300 - margin.left - margin.right,
+	    height = 200 - margin.top - margin.bottom;
+
+	// set the ranges
+	var y = d3.scaleBand()
+	          .range([height, 0])
+	          .padding(0.1);
+
+	var x = d3.scaleLinear()
+	          .range([0, width])
+	          .domain([0,14]);
+	          
+	// append the svg object to the body of the page
+	// append a 'group' element to 'svg'
+	// moves the 'group' element to the top left margin
+	var svg = chart.append("svg")
+	    .attr("width", width + margin.left + margin.right)
+	    .attr("height", height + margin.top + margin.bottom)
+	  .append("g")
+	    .attr("transform", 
+	          "translate(" + margin.left + "," + margin.top + ")");
+
+
+
+
+	  // Scale the range of the data in the domains
+	  var template= [{"key":"Full storage", "val": 0},{"key":"Storage", "val": 0},{"key":"City", "val": 0},{"key":"Highway", "val": 0},{"key":"Price", "val": 0},{"key":"Safety", "val": 0},{"key":"Overall", "val": 0}]
+	  
+	  y.domain(template.map(function(d) { return d.key; }));
+	  //y.domain([0, d3.max(data, function(d) { return d.sales; })]);
+
+
+	  // add the x Axis
+	  svg.append("g")
+	      .attr("transform", "translate(0," + height + ")")
+	      .attr("class", "x axis")
+	      .call(d3.axisBottom(x).ticks(5).tickSize(-height));
+
+	  // add the y Axis
+	  svg.append("g")
+  		.attr("class", "y axis")
+	      .call(d3.axisLeft(y));
+
+
+	  // append the rectangles for the bar chart
+	  svg.selectAll(".bar")
+	      .data(function(d){
+	      	return [{"key":"Full storage", "val": d.full_storage},{"key":"Storage", "val": d.storage},{"key":"City", "val": d.city},{"key":"Highway", "val": d.highway},{"key":"Price", "val": d.price},{"key":"Safety", "val": d.safety},{"key":"Overall", "val": d.overall}]
+	      })
+	    .enter().append("rect")
+	      .attr("class", "bar")
+	      //.attr("x", function(d) { return x(d.sales); })
+	      .attr("width", function(d) {console.log(d); return x(d.val); } )
+	      .attr("y", function(d) { return y(d.key); })
+	      .attr("height", y.bandwidth())
+	      .style("fill", function(d,i){
+	      	return colors[i]
+	      });
+
+
+
+
+
+    });
+
+
+//  function(data){
+// 	console.log(data)
+// 	var nest = d3.nest()
+//   .key(function(d) { return d.Make + " " + d.Model; })
+//   .entries(data);
+
+//   console.log(nest)
+
+
+// })
+</script>
+</body>
